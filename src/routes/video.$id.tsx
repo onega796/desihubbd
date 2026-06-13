@@ -196,25 +196,57 @@ function VideoPage() {
     if (platform==="copy") { navigator.clipboard.writeText(url); toast.success("Link copied"); }
   };
 
-  const postComment = async () => {
+  const postComment = async (parentId: string | null = null, text?: string) => {
     if (restricted) { setShowRestricted(true); return; }
-    if (!commentText.trim() || !commentName.trim()) return toast.error("Name and comment required");
-    const hasLink = containsLink(commentText);
+    if (!userId) { toast.error("Please sign in to comment"); return; }
+    const body = (text ?? commentText).trim();
+    if (!body) return toast.error("Write something first");
+    const name = profileName || "User";
+    const hasLink = containsLink(body);
     if (hasLink) {
       try { await doSelfRestrict(); } catch {}
       setRestricted(true);
       setShowRestricted(true);
       return;
     }
-    const text = commentText.trim();
-    const { error, data } = await supabase.from("comments").insert({
-      video_id: id, username: commentName.trim(), comment: text, rating: commentRating, has_link: false,
+    const { error, data } = await (supabase as any).from("comments").insert({
+      video_id: id, username: name, comment: body, rating: parentId ? 5 : commentRating, has_link: false, parent_id: parentId, user_id: userId,
     }).select().single();
     if (error) return toast.error(error.message);
     setComments([data, ...comments]);
     setDisplayComments([data, ...displayComments]);
-    setCommentText("");
-    toast.success("Comment posted");
+    if (parentId) { setReplyTo(null); setReplyText(""); }
+    else setCommentText("");
+    toast.success(parentId ? "Reply posted" : "Comment posted");
+  };
+
+  const toggleCommentLike = async (commentId: string) => {
+    if (!userId) return toast.error("Please sign in to like");
+    const has = myCommentLikes.has(commentId);
+    if (has) {
+      await (supabase as any).from("comment_likes").delete().eq("comment_id", commentId).eq("user_id", userId);
+      const next = new Set(myCommentLikes); next.delete(commentId); setMyCommentLikes(next);
+      setDisplayComments(displayComments.map(c => c.id === commentId ? { ...c, likes: Math.max(0,(c.likes ?? 0) - 1) } : c));
+    } else {
+      const { error } = await (supabase as any).from("comment_likes").insert({ comment_id: commentId, user_id: userId });
+      if (error) return toast.error(error.message);
+      const next = new Set(myCommentLikes); next.add(commentId); setMyCommentLikes(next);
+      setDisplayComments(displayComments.map(c => c.id === commentId ? { ...c, likes: (c.likes ?? 0) + 1 } : c));
+    }
+  };
+
+  const toggleVideoLike = async () => {
+    if (!userId) return toast.error("Please sign in to like");
+    if (myVideoLike) {
+      await (supabase as any).from("video_likes").delete().eq("video_id", id).eq("user_id", userId);
+      setMyVideoLike(false);
+      setDisplayLikes(l => Math.max(0, l - 1));
+    } else {
+      const { error } = await (supabase as any).from("video_likes").insert({ video_id: id, user_id: userId });
+      if (error) return toast.error(error.message);
+      setMyVideoLike(true);
+      setDisplayLikes(l => l + 1);
+    }
   };
 
   const submitReport = async () => {
