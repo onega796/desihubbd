@@ -138,7 +138,7 @@ function VideoPage() {
           setRelated(rel ?? []);
         }
       }
-      const { data: c } = await supabase.from("comments").select("*").eq("video_id", id).eq("status","approved").order("created_at",{ascending:false}).limit(20);
+      const { data: c } = await supabase.from("comments").select("*").eq("video_id", id).eq("status","approved").order("created_at",{ascending:false}).limit(100);
       setComments(c ?? []);
       try {
         const eng = await fetchEngagement({ data: { videoId: id } });
@@ -147,6 +147,21 @@ function VideoPage() {
       } catch {
         setDisplayLikes(v?.likes ?? 0);
         setDisplayComments(c ?? []);
+      }
+      // Load current-user signals: profile name + own likes
+      if (currentUserId) {
+        const [{ data: prof }, { data: myVL }, { data: myCL }] = await Promise.all([
+          (supabase as any).from("profiles").select("username,display_name").eq("user_id", currentUserId).maybeSingle(),
+          (supabase as any).from("video_likes").select("id").eq("video_id", id).eq("user_id", currentUserId).maybeSingle(),
+          (supabase as any).from("comment_likes").select("comment_id").eq("user_id", currentUserId),
+        ]);
+        setProfileName(prof?.display_name || prof?.username || "");
+        setMyVideoLike(!!myVL);
+        setMyCommentLikes(new Set((myCL ?? []).map((r: any) => r.comment_id)));
+      } else {
+        setProfileName("");
+        setMyVideoLike(false);
+        setMyCommentLikes(new Set());
       }
     })();
   }, [id]);
