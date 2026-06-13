@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { PlayCircle } from "lucide-react";
@@ -19,6 +20,9 @@ function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [forgotOpen, setForgotOpen] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotLoading, setForgotLoading] = useState(false);
 
   const signIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,6 +47,19 @@ function AuthPage() {
     navigate({ to: "/admin" });
   };
 
+  const sendReset = async () => {
+    if (!forgotEmail) return toast.error("Enter your email");
+    setForgotLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
+      redirectTo: `${window.location.origin}/profile`,
+    });
+    setForgotLoading(false);
+    if (error) return toast.error(error.message);
+    toast.success("Password reset email sent. Check your inbox.");
+    setForgotOpen(false);
+    setForgotEmail("");
+  };
+
   return (
     <SiteLayout>
       <div className="container mx-auto px-4 py-16 flex justify-center">
@@ -59,6 +76,11 @@ function AuthPage() {
               <form onSubmit={signIn} className="space-y-4 mt-4">
                 <div><Label>Email</Label><Input type="email" value={email} onChange={e=>setEmail(e.target.value)} required /></div>
                 <div><Label>Password</Label><Input type="password" value={password} onChange={e=>setPassword(e.target.value)} required /></div>
+                <div className="text-right">
+                  <button type="button" onClick={() => { setForgotEmail(email); setForgotOpen(true); }} className="text-xs text-primary hover:underline">
+                    Forgot password?
+                  </button>
+                </div>
                 <Button type="submit" className="w-full" disabled={loading}>{loading?"Signing in...":"Sign in"}</Button>
               </form>
             </TabsContent>
@@ -73,6 +95,20 @@ function AuthPage() {
           <p className="text-xs text-muted-foreground text-center mt-6">Admin access is granted automatically to the seeded admin email.</p>
         </div>
       </div>
+
+      <Dialog open={forgotOpen} onOpenChange={setForgotOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Reset your password</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">Enter your account email. We'll send a reset link — open it and you'll be sent to your profile where you can set a new password.</p>
+            <div><Label>Email</Label><Input type="email" value={forgotEmail} onChange={e=>setForgotEmail(e.target.value)} /></div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setForgotOpen(false)}>Cancel</Button>
+            <Button onClick={sendReset} disabled={forgotLoading}>{forgotLoading ? "Sending..." : "Send reset link"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </SiteLayout>
   );
 }
