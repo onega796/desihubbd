@@ -3,6 +3,7 @@ import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { SiteHeader } from "./SiteHeader";
 import { SiteFooter } from "./SiteFooter";
 import { Maintenance } from "./Maintenance";
+import { AdSlot } from "./AdSlot";
 import { useAuth } from "@/hooks/useAuth";
 import { useSiteSettings, loadSiteSettings } from "@/hooks/useSiteSettings";
 
