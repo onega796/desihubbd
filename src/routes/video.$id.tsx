@@ -348,31 +348,86 @@ function VideoPage() {
 
             {/* Comments */}
             <section className="mt-8">
-              <h2 className="text-lg font-bold mb-4">Comments ({displayComments.length})</h2>
-              <div className="bg-card border border-border rounded-xl p-4 mb-4 space-y-3">
-                <input value={commentName} onChange={e=>setCommentName(e.target.value)} placeholder="Your name" className="w-full bg-input border border-border rounded-md px-3 py-2 text-sm" />
-                <Textarea value={commentText} onChange={e=>setCommentText(e.target.value)} placeholder="Write a comment..." />
-                <div className="flex items-center justify-between">
-                  <Stars value={commentRating} onChange={setCommentRating} />
-                  <Button onClick={postComment} size="sm">Post comment</Button>
-                </div>
-              </div>
-              <div className="space-y-4">
-                {displayComments.map(c => (
-                  <div key={c.id} className={`flex gap-3 ${c.has_link?"opacity-70":""}`}>
-                    <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-sm font-semibold shrink-0">
-                      {c.username.slice(0,2).toUpperCase()}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 text-sm">
-                        <span className="font-semibold">{c.username}</span>
-                        <span className="text-xs text-muted-foreground">{timeAgo(c.created_at)}</span>
-                        <Stars value={c.rating} />
-                      </div>
-                      <p className={`text-sm mt-1 ${c.has_link?"text-destructive":""}`}>{c.comment}</p>
-                    </div>
+              <h2 className="text-lg font-bold mb-4">Comments ({displayComments.filter((c:any)=>!c.parent_id).length})</h2>
+              {userId ? (
+                <div className="bg-card border border-border rounded-xl p-4 mb-4 space-y-3">
+                  <div className="text-xs text-muted-foreground">Posting as <strong>{profileName || "User"}</strong></div>
+                  <Textarea value={commentText} onChange={e=>setCommentText(e.target.value)} placeholder="Write a comment..." />
+                  <div className="flex items-center justify-between">
+                    <Stars value={commentRating} onChange={setCommentRating} />
+                    <Button onClick={() => postComment(null)} size="sm">Post comment</Button>
                   </div>
-                ))}
+                </div>
+              ) : (
+                <div className="bg-card border border-border rounded-xl p-4 mb-4 text-sm text-muted-foreground">
+                  <Link to="/auth" className="text-primary hover:underline">Sign in</Link> to like and post comments.
+                </div>
+              )}
+              <div className="space-y-5">
+                {displayComments.filter((c:any) => !c.parent_id).map((c:any) => {
+                  const replies = displayComments.filter((r:any) => r.parent_id === c.id);
+                  const liked = myCommentLikes.has(c.id);
+                  return (
+                    <div key={c.id} className={`flex gap-3 ${c.has_link?"opacity-70":""}`}>
+                      <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-sm font-semibold shrink-0">
+                        {c.username.slice(0,2).toUpperCase()}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="font-semibold">{c.username}</span>
+                          <span className="text-xs text-muted-foreground">{timeAgo(c.created_at)}</span>
+                          <Stars value={c.rating} />
+                        </div>
+                        <p className={`text-sm mt-1 ${c.has_link?"text-destructive":""}`}>{c.comment}</p>
+                        {!c._fake && (
+                          <div className="flex items-center gap-3 mt-2 text-xs">
+                            <button onClick={() => toggleCommentLike(c.id)} className={`inline-flex items-center gap-1 hover:text-primary ${liked?"text-primary":"text-muted-foreground"}`}>
+                              <ThumbsUp className="h-3.5 w-3.5" /> {c.likes ?? 0}
+                            </button>
+                            <button onClick={() => { setReplyTo(replyTo === c.id ? null : c.id); setReplyText(""); }} className="text-muted-foreground hover:text-primary">
+                              Reply
+                            </button>
+                          </div>
+                        )}
+                        {replyTo === c.id && userId && (
+                          <div className="mt-2 space-y-2">
+                            <Textarea value={replyText} onChange={e=>setReplyText(e.target.value)} placeholder={`Reply to ${c.username}...`} rows={2} />
+                            <div className="flex gap-2 justify-end">
+                              <Button size="sm" variant="outline" onClick={() => setReplyTo(null)}>Cancel</Button>
+                              <Button size="sm" onClick={() => postComment(c.id, replyText)}>Reply</Button>
+                            </div>
+                          </div>
+                        )}
+                        {replies.length > 0 && (
+                          <div className="mt-3 space-y-3 pl-4 border-l border-border">
+                            {replies.map((r:any) => {
+                              const rLiked = myCommentLikes.has(r.id);
+                              return (
+                                <div key={r.id} className="flex gap-2">
+                                  <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-semibold shrink-0">
+                                    {r.username.slice(0,2).toUpperCase()}
+                                  </div>
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2 text-xs">
+                                      <span className="font-semibold">{r.username}</span>
+                                      <span className="text-muted-foreground">{timeAgo(r.created_at)}</span>
+                                    </div>
+                                    <p className="text-sm mt-1">{r.comment}</p>
+                                    {!r._fake && (
+                                      <button onClick={() => toggleCommentLike(r.id)} className={`mt-1 inline-flex items-center gap-1 text-xs hover:text-primary ${rLiked?"text-primary":"text-muted-foreground"}`}>
+                                        <ThumbsUp className="h-3 w-3" /> {r.likes ?? 0}
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </section>
           </div>
