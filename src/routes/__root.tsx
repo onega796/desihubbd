@@ -11,6 +11,8 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { Toaster } from "@/components/ui/sonner";
+import { useSiteSettings, loadSiteSettings } from "@/hooks/useSiteSettings";
 
 function NotFoundComponent() {
   return (
@@ -77,16 +79,23 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "StreamBD" },
+      { name: "description", content: "StreamBD is a professional video streaming platform with trending, categories and a clean dark UI." },
+      { name: "author", content: "StreamBD" },
+      { property: "og:title", content: "StreamBD" },
+      { property: "og:description", content: "StreamBD is a professional video streaming platform with trending, categories and a clean dark UI." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:site", content: "@StreamBD" },
+      { name: "twitter:title", content: "StreamBD" },
+      { name: "twitter:description", content: "StreamBD is a professional video streaming platform with trending, categories and a clean dark UI." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/22ab6208-9882-4172-a1ba-945f528521c1" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/22ab6208-9882-4172-a1ba-945f528521c1" },
     ],
     links: [
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap" },
       {
         rel: "stylesheet",
         href: appCss,
@@ -115,11 +124,25 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const settings = useSiteSettings();
+  useEffect(() => { loadSiteSettings(); }, []);
+  useEffect(() => {
+    if (!settings) return;
+    if (typeof document !== "undefined") {
+      document.title = settings.site_title;
+      if (settings.favicon_url) {
+        let link = document.querySelector<HTMLLinkElement>("link[rel~='icon']");
+        if (!link) { link = document.createElement("link"); link.rel = "icon"; document.head.appendChild(link); }
+        link.href = settings.favicon_url;
+      }
+    }
+  }, [settings]);
 
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
+      <Toaster />
     </QueryClientProvider>
   );
 }
