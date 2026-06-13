@@ -70,8 +70,12 @@ function VideoPage() {
   const [showPlayer, setShowPlayer] = useState(false);
   const [showDesc, setShowDesc] = useState(false);
   const [commentText, setCommentText] = useState("");
-  const [commentName, setCommentName] = useState("");
   const [commentRating, setCommentRating] = useState(5);
+  const [replyTo, setReplyTo] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState("");
+  const [myCommentLikes, setMyCommentLikes] = useState<Set<string>>(new Set());
+  const [myVideoLike, setMyVideoLike] = useState(false);
+  const [profileName, setProfileName] = useState<string>("");
   const [reportReason, setReportReason] = useState("Broken Video");
   const [userId, setUserId] = useState<string | null>(null);
   const [isSubscribed, setIsSubscribed] = useState(false);
