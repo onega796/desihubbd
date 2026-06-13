@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 import { useSiteSettings, loadSiteSettings } from "@/hooks/useSiteSettings";
+import { useDeviceGuard } from "@/hooks/useDeviceGuard";
 
 function NotFoundComponent() {
   return (
@@ -125,6 +126,7 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const settings = useSiteSettings();
+  useDeviceGuard();
   useEffect(() => { loadSiteSettings(); }, []);
   useEffect(() => {
     if (!settings) return;
