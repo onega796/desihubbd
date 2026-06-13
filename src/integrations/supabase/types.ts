@@ -71,6 +71,35 @@ export type Database = {
         }
         Relationships: []
       }
+      comment_likes: {
+        Row: {
+          comment_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          comment_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          comment_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comment_likes_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       comments: {
         Row: {
           comment: string
@@ -79,8 +108,10 @@ export type Database = {
           id: string
           is_fake: boolean
           likes: number
+          parent_id: string | null
           rating: number
           status: string
+          user_id: string | null
           username: string
           video_id: string
         }
@@ -91,8 +122,10 @@ export type Database = {
           id?: string
           is_fake?: boolean
           likes?: number
+          parent_id?: string | null
           rating?: number
           status?: string
+          user_id?: string | null
           username: string
           video_id: string
         }
@@ -103,12 +136,21 @@ export type Database = {
           id?: string
           is_fake?: boolean
           likes?: number
+          parent_id?: string | null
           rating?: number
           status?: string
+          user_id?: string | null
           username?: string
           video_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "comments"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "comments_video_id_fkey"
             columns: ["video_id"]
@@ -266,6 +308,8 @@ export type Database = {
       }
       profiles: {
         Row: {
+          active_device_at: string | null
+          active_device_id: string | null
           avatar_url: string | null
           created_at: string
           display_name: string | null
@@ -277,6 +321,8 @@ export type Database = {
           username: string | null
         }
         Insert: {
+          active_device_at?: string | null
+          active_device_id?: string | null
           avatar_url?: string | null
           created_at?: string
           display_name?: string | null
@@ -288,6 +334,8 @@ export type Database = {
           username?: string | null
         }
         Update: {
+          active_device_at?: string | null
+          active_device_id?: string | null
           avatar_url?: string | null
           created_at?: string
           display_name?: string | null
@@ -484,6 +532,35 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      video_likes: {
+        Row: {
+          created_at: string
+          id: string
+          user_id: string
+          video_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          user_id: string
+          video_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          user_id?: string
+          video_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_likes_video_id_fkey"
+            columns: ["video_id"]
+            isOneToOne: false
+            referencedRelation: "videos"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       videos: {
         Row: {
