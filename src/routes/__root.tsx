@@ -126,6 +126,7 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const settings = useSiteSettings();
+  useDeviceGuard();
   useEffect(() => { loadSiteSettings(); }, []);
   useEffect(() => {
     if (!settings) return;
