@@ -303,7 +303,7 @@ function VideoPage() {
             </div>
 
             <div className="flex items-center gap-2 mt-4 flex-wrap">
-              <Button variant="outline" size="sm"><ThumbsUp className="h-4 w-4 mr-2" />{displayLikes}</Button>
+              <Button variant={myVideoLike ? "default" : "outline"} size="sm" onClick={toggleVideoLike}><ThumbsUp className="h-4 w-4 mr-2" />{displayLikes}</Button>
               <Button variant="outline" size="sm"><ThumbsDown className="h-4 w-4 mr-2" />{video.dislikes ?? 0}</Button>
 
               <Dialog>
