@@ -39,11 +39,11 @@ function AuthPage() {
     setLoading(true);
     const { error } = await supabase.auth.signUp({
       email, password,
-      options: { emailRedirectTo: `${window.location.origin}/admin` },
+      options: { emailRedirectTo: "https://primiumbd.vercel.app/admin" },
     });
     setLoading(false);
     if (error) return toast.error(error.message);
-    toast.success("Account created.");
+    toast.success("Account created. Check your email to verify.");
     navigate({ to: "/admin" });
   };
 
