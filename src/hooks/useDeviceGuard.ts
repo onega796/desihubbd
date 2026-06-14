@@ -76,9 +76,7 @@ export function useDeviceGuard() {
       if (!profile?.active_device_id) {
         await claimDevice(userId);
       } else if (profile.active_device_id !== deviceId) {
-        toast.error("Signed out: account opened on another device.");
-        await supabase.auth.signOut();
-        return;
+        await claimDevice(userId);
       }
 
       startPolling(userId);
