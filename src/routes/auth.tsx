@@ -51,7 +51,7 @@ function AuthPage() {
     if (!forgotEmail) return toast.error("Enter your email");
     setForgotLoading(true);
     const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
-      redirectTo: `${window.location.origin}/profile`,
+      redirectTo: "https://primiumbd.vercel.app/profile",
     });
     setForgotLoading(false);
     if (error) return toast.error(error.message);
