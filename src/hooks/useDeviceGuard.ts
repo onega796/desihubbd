@@ -46,12 +46,14 @@ export function useDeviceGuard() {
     const startPolling = (userId: string) => {
       if (timer) clearInterval(timer);
       timer = setInterval(() => {
-        if (disposed) return;
-        const ok = await checkDevice(userId);
-        if (!ok) {
-          toast.error("Signed out: account opened on another device.");
-          await supabase.auth.signOut();
-        }
+        void (async () => {
+          if (disposed) return;
+          const ok = await checkDevice(userId);
+          if (!ok) {
+            toast.error("Signed out: account opened on another device.");
+            await supabase.auth.signOut();
+          }
+        })();
       }, 20000);
     };
 
