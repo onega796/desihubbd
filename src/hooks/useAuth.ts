@@ -11,33 +11,15 @@ export function useAuth() {
   useEffect(() => {
     let mounted = true;
 
-    const checkAdminRole = async (activeUser: User | null) => {
-      if (!activeUser) {
-        if (mounted) setIsAdmin(false);
-        return;
-      }
-
-      const { data } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", activeUser.id)
-        .eq("role", "admin")
-        .maybeSingle();
-
-      if (mounted) setIsAdmin(!!data);
-    };
-
-    const syncSession = async (sess: Session | null) => {
+    const syncSession = (sess: Session | null) => {
       if (!mounted) return;
-      setLoading(true);
       setSession(sess);
       setUser(sess?.user ?? null);
-      await checkAdminRole(sess?.user ?? null);
-      if (mounted) setLoading(false);
+      setLoading(false);
     };
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, sess) => {
-      void syncSession(sess);
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, sess) => {
+      syncSession(sess);
     });
 
     supabase.auth.getSession().then(({ data }) => void syncSession(data.session));
@@ -47,6 +29,32 @@ export function useAuth() {
       sub.subscription.unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const checkAdminRole = async () => {
+      if (!user) {
+        setIsAdmin(false);
+        return;
+      }
+
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+
+      if (!cancelled) setIsAdmin(!!data);
+    };
+
+    void checkAdminRole();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   return { user, session, isAdmin, loading };
 }
