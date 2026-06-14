@@ -16,7 +16,7 @@ function getDeviceId(): string {
 
 async function claimDevice(userId: string) {
   const deviceId = getDeviceId();
-  await (supabase as any)
+  return (supabase as any)
     .from("profiles")
     .update({ active_device_id: deviceId, active_device_at: new Date().toISOString() })
     .eq("user_id", userId);
@@ -41,11 +41,12 @@ async function checkDevice(userId: string): Promise<boolean> {
 export function useDeviceGuard() {
   useEffect(() => {
     let timer: ReturnType<typeof setInterval> | null = null;
-    let activeUserId: string | null = null;
+    let disposed = false;
 
     const startPolling = (userId: string) => {
       if (timer) clearInterval(timer);
-      timer = setInterval(async () => {
+      timer = setInterval(() => {
+        if (disposed) return;
         const ok = await checkDevice(userId);
         if (!ok) {
           toast.error("Signed out: account opened on another device.");
@@ -58,28 +59,43 @@ export function useDeviceGuard() {
       if (timer) { clearInterval(timer); timer = null; }
     };
 
-    const { data: sub } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const initSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      const userId = data.session?.user?.id;
+      if (!userId || disposed) return;
+
+      const { data: profile } = await (supabase as any)
+        .from("profiles")
+        .select("active_device_id")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      const deviceId = getDeviceId();
+      if (!profile?.active_device_id) {
+        await claimDevice(userId);
+      } else if (profile.active_device_id !== deviceId) {
+        toast.error("Signed out: account opened on another device.");
+        await supabase.auth.signOut();
+        return;
+      }
+
+      startPolling(userId);
+    };
+
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       const userId = session?.user?.id ?? null;
       if (event === "SIGNED_IN" && userId) {
-        activeUserId = userId;
-        await claimDevice(userId);
+        void claimDevice(userId);
         startPolling(userId);
       } else if (event === "SIGNED_OUT") {
-        activeUserId = null;
         stopPolling();
-      } else if (event === "INITIAL_SESSION" && userId) {
-        activeUserId = userId;
-        const ok = await checkDevice(userId);
-        if (!ok) {
-          toast.error("Signed out: account opened on another device.");
-          await supabase.auth.signOut();
-          return;
-        }
-        startPolling(userId);
       }
     });
 
+    void initSession();
+
     return () => {
+      disposed = true;
       stopPolling();
       sub.subscription.unsubscribe();
     };
