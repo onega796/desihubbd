@@ -60,8 +60,6 @@ function AdminLayout() {
         .eq("role", "admin")
         .maybeSingle();
 
-      console.log("[admin-access]", { currentUserId: currentUser.id, roleData: data });
-
       if (cancelled) return;
 
       setUser(currentUser);
@@ -82,7 +80,6 @@ function AdminLayout() {
   }, []);
 
   if (loading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Checking access...</div>;
-  console.log("[admin-render]", { userId: user?.id ?? null, isAdmin, loading });
   if (!user) return <Navigate to="/auth" />;
   if (!isAdmin) return <Navigate to="/" />;
 
