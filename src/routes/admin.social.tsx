@@ -128,8 +128,16 @@ function AdminSocialPage() {
             </datalist>
           </div>
         </div>
-        <Button onClick={add} className="bg-primary hover:bg-primary/90"><Plus className="h-4 w-4 mr-2" />Add link</Button>
-        <p className="text-xs text-muted-foreground">Icon name is a Lucide icon. Suggestions: {ICON_SUGGESTIONS.join(", ")}.</p>
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={add} className="bg-primary hover:bg-primary/90"><Plus className="h-4 w-4 mr-2" />Add link</Button>
+          {QUICK_ADD.map(q => (
+            <Button key={q.platform} type="button" variant="outline" size="sm"
+              onClick={() => setNewItem({ platform: q.platform, url: q.url, icon: q.icon })}>
+              {q.platform}
+            </Button>
+          ))}
+        </div>
+        <p className="text-xs text-muted-foreground">Icon name is a Lucide icon. Use "Send" for Telegram. Suggestions: {ICON_SUGGESTIONS.join(", ")}.</p>
       </div>
 
       <div className="rounded-lg border border-border bg-card divide-y divide-border">
