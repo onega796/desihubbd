@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { PlayCircle, Link as LinkIcon } from "lucide-react";
 import * as Icons from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 type SocialLink = { id: string; platform: string; url: string; icon: string };
 
@@ -12,6 +13,8 @@ function renderIcon(name: string) {
 }
 
 export function SiteFooter() {
+  const settings = useSiteSettings();
+  const siteName = settings?.site_title ?? "StreamBD";
   const [socials, setSocials] = useState<SocialLink[]>([]);
   useEffect(() => {
     supabase
@@ -26,7 +29,7 @@ export function SiteFooter() {
       <div className="container mx-auto px-4 py-12 grid grid-cols-2 md:grid-cols-4 gap-8 text-sm">
         <div>
           <Link to="/" className="flex items-center gap-2 font-bold text-base mb-3">
-            <PlayCircle className="h-5 w-5 text-primary" /> StreamBD
+            <PlayCircle className="h-5 w-5 text-primary" /> {siteName}
           </Link>
           <p className="text-muted-foreground">Professional video streaming platform.</p>
         </div>
@@ -67,7 +70,7 @@ export function SiteFooter() {
         </div>
       </div>
       <div className="border-t border-border py-4 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} StreamBD. All rights reserved.
+        © {new Date().getFullYear()} {siteName}. All rights reserved.
       </div>
     </footer>
   );

@@ -23,7 +23,14 @@ type SocialLink = {
   is_active: boolean;
 };
 
-const ICON_SUGGESTIONS = ["Facebook", "Twitter", "Instagram", "Youtube", "Linkedin", "Github", "Twitch", "Send", "MessageCircle", "Link"];
+const ICON_SUGGESTIONS = ["Facebook", "Twitter", "Instagram", "Youtube", "Linkedin", "Github", "Twitch", "Send", "MessageCircle", "Link", "Telegram"];
+
+const QUICK_ADD = [
+  { platform: "Telegram", icon: "Send", url: "https://t.me/" },
+  { platform: "Facebook", icon: "Facebook", url: "https://facebook.com/" },
+  { platform: "WhatsApp", icon: "MessageCircle", url: "https://wa.me/" },
+  { platform: "YouTube", icon: "Youtube", url: "https://youtube.com/@" },
+];
 
 function renderIcon(name: string) {
   const Icon = (Icons as any)[name] ?? Icons.Link;
@@ -121,8 +128,16 @@ function AdminSocialPage() {
             </datalist>
           </div>
         </div>
-        <Button onClick={add} className="bg-primary hover:bg-primary/90"><Plus className="h-4 w-4 mr-2" />Add link</Button>
-        <p className="text-xs text-muted-foreground">Icon name is a Lucide icon. Suggestions: {ICON_SUGGESTIONS.join(", ")}.</p>
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={add} className="bg-primary hover:bg-primary/90"><Plus className="h-4 w-4 mr-2" />Add link</Button>
+          {QUICK_ADD.map(q => (
+            <Button key={q.platform} type="button" variant="outline" size="sm"
+              onClick={() => setNewItem({ platform: q.platform, url: q.url, icon: q.icon })}>
+              {q.platform}
+            </Button>
+          ))}
+        </div>
+        <p className="text-xs text-muted-foreground">Icon name is a Lucide icon. Use "Send" for Telegram. Suggestions: {ICON_SUGGESTIONS.join(", ")}.</p>
       </div>
 
       <div className="rounded-lg border border-border bg-card divide-y divide-border">

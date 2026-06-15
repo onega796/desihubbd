@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { LayoutDashboard, Video, Folder, MessageSquare, Megaphone, MenuIcon, Settings, Sparkles, BarChart3, LogOut, PlayCircle, Share2, Users, Flag, Crown, GalleryHorizontal } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
@@ -31,6 +32,8 @@ function AdminLayout() {
   const { user, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
   const path = useRouterState({ select: s => s.location.pathname });
+  const settings = useSiteSettings();
+  const siteName = settings?.site_title ?? "StreamBD";
 
   useEffect(() => {
     if (loading) return;
@@ -46,7 +49,7 @@ function AdminLayout() {
     <div className="min-h-screen flex bg-background">
       <aside className="w-60 bg-sidebar border-r border-sidebar-border flex flex-col shrink-0">
         <div className="h-16 flex items-center gap-2 px-4 font-bold border-b border-sidebar-border">
-          <PlayCircle className="h-5 w-5 text-primary" /> StreamBD
+          <PlayCircle className="h-5 w-5 text-primary" /> {siteName}
         </div>
         <nav className="flex-1 p-2 space-y-1">
           {nav.map(n => {

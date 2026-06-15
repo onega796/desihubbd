@@ -6,7 +6,8 @@ export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [sessionLoading, setSessionLoading] = useState(true);
+  const [roleLoading, setRoleLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
@@ -15,7 +16,7 @@ export function useAuth() {
       if (!mounted) return;
       setSession(sess);
       setUser(sess?.user ?? null);
-      setLoading(false);
+      setSessionLoading(false);
     };
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, sess) => {
@@ -36,9 +37,10 @@ export function useAuth() {
     const checkAdminRole = async () => {
       if (!user) {
         setIsAdmin(false);
+        setRoleLoading(false);
         return;
       }
-
+      setRoleLoading(true);
       const { data } = await supabase
         .from("user_roles")
         .select("role")
@@ -46,7 +48,10 @@ export function useAuth() {
         .eq("role", "admin")
         .maybeSingle();
 
-      if (!cancelled) setIsAdmin(!!data);
+      if (!cancelled) {
+        setIsAdmin(!!data);
+        setRoleLoading(false);
+      }
     };
 
     void checkAdminRole();
@@ -56,5 +61,5 @@ export function useAuth() {
     };
   }, [user]);
 
-  return { user, session, isAdmin, loading };
+  return { user, session, isAdmin, loading: sessionLoading || roleLoading };
 }
