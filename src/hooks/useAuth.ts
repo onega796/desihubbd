@@ -14,6 +14,7 @@ export function useAuth() {
 
     const syncSession = (sess: Session | null) => {
       if (!mounted) return;
+      setRoleLoading(!!sess?.user);
       setSession(sess);
       setUser(sess?.user ?? null);
       setSessionLoading(false);
@@ -40,7 +41,7 @@ export function useAuth() {
         setRoleLoading(false);
         return;
       }
-      setRoleLoading(true);
+
       const { data } = await supabase
         .from("user_roles")
         .select("role")
