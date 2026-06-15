@@ -1,5 +1,4 @@
-import { createFileRoute, Outlet, Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { createFileRoute, Outlet, Link, Navigate, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -35,13 +34,9 @@ function AdminLayout() {
   const settings = useSiteSettings();
   const siteName = settings?.site_title ?? "StreamBD";
 
-  useEffect(() => {
-    if (loading) return;
-    if (!user) navigate({ to: "/auth" });
-    else if (!isAdmin) navigate({ to: "/" });
-  }, [user, isAdmin, loading, navigate]);
-
   if (loading || !user || !isAdmin) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Checking access...</div>;
+  if (!loading && !user) return <Navigate to="/auth" />;
+  if (!loading && user && !isAdmin) return <Navigate to="/" />;
 
   const logout = async () => { await supabase.auth.signOut(); navigate({ to: "/auth" }); };
 
