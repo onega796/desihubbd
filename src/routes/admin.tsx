@@ -34,9 +34,9 @@ function AdminLayout() {
   const settings = useSiteSettings();
   const siteName = settings?.site_title ?? "StreamBD";
 
-  if (loading || !user || !isAdmin) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Checking access...</div>;
-  if (!loading && !user) return <Navigate to="/auth" />;
-  if (!loading && user && !isAdmin) return <Navigate to="/" />;
+  if (loading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Checking access...</div>;
+  if (!user) return <Navigate to="/auth" />;
+  if (!isAdmin) return <Navigate to="/" />;
 
   const logout = async () => { await supabase.auth.signOut(); navigate({ to: "/auth" }); };
 
