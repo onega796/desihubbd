@@ -68,7 +68,7 @@ export function Maintenance({ title, message }: { title: string; message: string
       <div className="relative z-10 h-full w-full flex flex-col items-center justify-center text-center px-6">
         <div className="flex items-center gap-3 mb-8">
           <PlayCircle className="h-10 w-10 text-primary" />
-          <span className="font-bold text-2xl">StreamBD</span>
+          <span className="font-bold text-2xl">{title || "StreamBD"}</span>
         </div>
         <h1 className="text-3xl md:text-5xl font-bold mb-4 typing-cursor">{typed}</h1>
         <p className="text-muted-foreground max-w-md mb-2">{message || "Our team is working hard."}</p>

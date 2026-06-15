@@ -23,7 +23,14 @@ type SocialLink = {
   is_active: boolean;
 };
 
-const ICON_SUGGESTIONS = ["Facebook", "Twitter", "Instagram", "Youtube", "Linkedin", "Github", "Twitch", "Send", "MessageCircle", "Link"];
+const ICON_SUGGESTIONS = ["Facebook", "Twitter", "Instagram", "Youtube", "Linkedin", "Github", "Twitch", "Send", "MessageCircle", "Link", "Telegram"];
+
+const QUICK_ADD = [
+  { platform: "Telegram", icon: "Send", url: "https://t.me/" },
+  { platform: "Facebook", icon: "Facebook", url: "https://facebook.com/" },
+  { platform: "WhatsApp", icon: "MessageCircle", url: "https://wa.me/" },
+  { platform: "YouTube", icon: "Youtube", url: "https://youtube.com/@" },
+];
 
 function renderIcon(name: string) {
   const Icon = (Icons as any)[name] ?? Icons.Link;
