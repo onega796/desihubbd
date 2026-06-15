@@ -1,6 +1,6 @@
-import { createFileRoute, Outlet, Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
+import { createFileRoute, Outlet, Link, Navigate, useNavigate, useRouterState } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
@@ -29,19 +29,59 @@ const nav = [
 ] as const;
 
 function AdminLayout() {
-  const { user, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
   const path = useRouterState({ select: s => s.location.pathname });
   const settings = useSiteSettings();
   const siteName = settings?.site_title ?? "StreamBD";
+  const [user, setUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (loading) return;
-    if (!user) navigate({ to: "/auth" });
-    else if (!isAdmin) navigate({ to: "/" });
-  }, [user, isAdmin, loading, navigate]);
+    let cancelled = false;
 
-  if (loading || !user || !isAdmin) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Checking access...</div>;
+    const resolveAccess = async (nextUser?: User | null) => {
+      setLoading(true);
+
+      const currentUser = nextUser ?? (await supabase.auth.getSession()).data.session?.user ?? null;
+      if (cancelled) return;
+
+      if (!currentUser) {
+        setUser(null);
+        setIsAdmin(false);
+        setLoading(false);
+        return;
+      }
+
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", currentUser.id)
+        .eq("role", "admin")
+        .maybeSingle();
+
+      if (cancelled) return;
+
+      setUser(currentUser);
+      setIsAdmin(!!data);
+      setLoading(false);
+    };
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      void resolveAccess(session?.user ?? null);
+    });
+
+    void resolveAccess();
+
+    return () => {
+      cancelled = true;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
+
+  if (loading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Checking access...</div>;
+  if (!user) return <Navigate to="/auth" />;
+  if (!isAdmin) return <Navigate to="/" />;
 
   const logout = async () => { await supabase.auth.signOut(); navigate({ to: "/auth" }); };
 

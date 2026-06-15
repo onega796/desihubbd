@@ -8,12 +8,14 @@ export function useAuth() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [sessionLoading, setSessionLoading] = useState(true);
   const [roleLoading, setRoleLoading] = useState(true);
+  const [roleCheckedFor, setRoleCheckedFor] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
 
     const syncSession = (sess: Session | null) => {
       if (!mounted) return;
+      setRoleLoading(!!sess?.user);
       setSession(sess);
       setUser(sess?.user ?? null);
       setSessionLoading(false);
@@ -37,10 +39,14 @@ export function useAuth() {
     const checkAdminRole = async () => {
       if (!user) {
         setIsAdmin(false);
+        setRoleCheckedFor(null);
         setRoleLoading(false);
         return;
       }
+
+      setRoleCheckedFor(null);
       setRoleLoading(true);
+
       const { data } = await supabase
         .from("user_roles")
         .select("role")
@@ -50,6 +56,7 @@ export function useAuth() {
 
       if (!cancelled) {
         setIsAdmin(!!data);
+        setRoleCheckedFor(user.id);
         setRoleLoading(false);
       }
     };
@@ -61,5 +68,10 @@ export function useAuth() {
     };
   }, [user]);
 
-  return { user, session, isAdmin, loading: sessionLoading || roleLoading };
+  return {
+    user,
+    session,
+    isAdmin,
+    loading: sessionLoading || roleLoading || (!!user && roleCheckedFor !== user.id),
+  };
 }
