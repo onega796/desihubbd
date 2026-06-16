@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
-type Position = "header" | "sidebar" | "footer" | "mid";
+type Position = "header" | "sidebar" | "footer" | "mid" | "popunder";
 
 export function AdSlot({ position, className }: { position: Position; className?: string }) {
   const { user, loading } = useAuth();
