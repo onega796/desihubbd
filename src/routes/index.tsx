@@ -4,6 +4,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import { Play, ChevronRight, ChevronLeft } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { VideoCard, type VideoCardData } from "@/components/site/VideoCard";
+import { AdSlot } from "@/components/site/AdSlot";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/")({
@@ -167,6 +168,9 @@ function Index() {
         </section>
       )}
 
+      {/* Mid ad */}
+      <AdSlot position="mid" className="container mx-auto px-4 mt-12" />
+
       {/* Latest */}
       <section className="container mx-auto px-4 mt-12 mb-12">
         <h2 className="text-xl font-bold mb-4">Latest Videos</h2>
@@ -177,6 +181,7 @@ function Index() {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {latest.map((v) => <VideoCard key={v.id} v={v} />)}
             </div>
+            <AdSlot position="sidebar" className="mt-8" />
             {totalPages > 1 && (
               <nav className="mt-8 flex items-center justify-center gap-1 flex-wrap" aria-label="Pagination">
                 <button
