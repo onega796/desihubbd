@@ -4,6 +4,7 @@ import { SiteHeader } from "./SiteHeader";
 import { SiteFooter } from "./SiteFooter";
 import { Maintenance } from "./Maintenance";
 import { AdSlot } from "./AdSlot";
+import { Popunder } from "./Popunder";
 import { useAuth } from "@/hooks/useAuth";
 import { useSiteSettings, loadSiteSettings } from "@/hooks/useSiteSettings";
 
@@ -36,6 +37,7 @@ export function SiteLayout({ children, requireAuth = false }: { children: ReactN
       <main className="flex-1 animate-fade-in">{children}</main>
       <AdSlot position="footer" className="container mx-auto px-4 py-2" />
       <SiteFooter />
+      <Popunder />
     </div>
   );
 }
